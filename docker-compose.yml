@@ -30,7 +30,6 @@ services:
       target: development
       context: .
     command: npm run start:dev
-    # restart: always
     env_file:
       - .env
     ports:
