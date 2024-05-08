@@ -1,0 +1,48 @@
+volumes:
+  postgres_data:
+
+services:
+  db:
+    container_name: db-ps
+    image: postgres:alpine
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '${PORT_DB}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  pandadoc_service:
+    container_name: pandadoc_service
+    build:
+      target: development
+      context: .
+    command: npm run start:dev
+    # restart: always
+    env_file:
+      - .env
+    ports:
+      - '${PORT_APP}:3000'
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /usr/src/app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+    depends_on:
+      - db
