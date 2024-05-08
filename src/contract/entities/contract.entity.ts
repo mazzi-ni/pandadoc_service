@@ -1,13 +1,15 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../common/db/abstract.entity';
+import { Officina } from './officina.entity';
+import { Azienda } from './azienda.entity';
 
 @Entity('contract')
 export class Contract extends AbstractEntity<Contract> {
-  @Column({ nullable: false })
-  id_officina: string;
+  @ManyToOne(() => Officina, (officina) => officina.id, { nullable: false })
+  id_officina: Officina;
 
-  @Column({ nullable: false })
-  id_azienda: string;
+  @ManyToOne(() => Azienda, (azienda) => azienda.id, { nullable: false })
+  id_azienda: Azienda;
 
   @Column({ nullable: false })
   doc_id: string;

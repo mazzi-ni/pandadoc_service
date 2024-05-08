@@ -1,8 +1,12 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../common/db/abstract.entity';
+import { Contract } from './contract.entity';
 
 @Entity('officina_vfleet')
-export class Azienda extends AbstractEntity<Azienda> {
+export class Officina extends AbstractEntity<Officina> {
+  @OneToMany(() => Contract, contract => contract.id)
+  contract: Contract[];
+
   @Column({ nullable: false })
   pec: string;
 
