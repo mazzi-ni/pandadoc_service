@@ -3,13 +3,20 @@ import { WebhookDto } from '../dto/webhook.dto';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { DocumentDetailDto } from '../dto/docdetail.dto';
+import { ContractService } from './contract.service';
+import { OfficinaService } from './officina.service';
+import { Table } from '../entities/contract.entity';
 
 @Injectable()
 export class WeebHookService {
   private readonly logger: Logger = new Logger(WeebHookService.name);
   private DOC_URL: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly contractService: ContractService,
+    private readonly officinaService: OfficinaService
+  ) {
     this.DOC_URL = this.configService.get<string>('pandadoc.doc');
     axios.defaults.headers.common['Authorization'] =
       `API-Key ${this.configService.get<string>('pandadoc.apikey')}`;
@@ -18,24 +25,31 @@ export class WeebHookService {
   public exec(events: WebhookDto[]) {
     events.map((event) => {
       if (event.data.status === 'document.completed') {
-        this.extractData(event.data.id);
+        this.extractData(event.data.id, event.data.name);
       }
     });
   }
 
-  private async extractData(id: string) {
+  private async extractData(id: string, name: string) {
     let docDetail: DocumentDetailDto = await this.getDocuments(id);
 
+    let tokens = docDetail.tokens;
     let fields = this.extractFields(docDetail.fields);
     let tables = docDetail.pricing['tables']
-      ? this.extractTables(docDetail.pricing['tables'])
+      ? this.extractTables(docDetail.pricing['tables']) as Table[]
       : null;
 
-    this.logger.debug(JSON.stringify(fields.merge_fields));
-    this.logger.debug(JSON.stringify(tables[0]));
+    const officina = fields.merge_fields !== null
+      ? await this.officinaService.exec(fields.merge_fields)
+      : null
 
-    return { fields: fields, tables: tables };
+    const contract = tokens !== null && tables !== null && officina !== undefined
+      ? await this.contractService.exec(tokens, tables, officina, id, name)
+      : null
+
+    // return { fields: fields, tables: tables };
   }
+
 
   private extractTables(tables: object[]) {
     let processTables: object[];
@@ -106,7 +120,7 @@ export class WeebHookService {
       ]);
 
       if (
-        !(field['name'].includes('Signature') || field['name'].includes('Date'))
+        !(field['name'].includes('Firma') || field['name'].includes('Date'))
       ) {
         processFieldData.merge_fields = {
           ...processFieldData.merge_fields,
