@@ -7,7 +7,10 @@ import { DatabaseModule } from '../common/db/database.module';
 import { Contract } from './entities/contract.entity';
 import { Azienda } from './entities/azienda.entity';
 import { Officina } from './entities/officina.entity';
+import { ContractService } from './services/contract.service';
+import { OfficinaService } from './services/officina.service';
 import config from '../common/config/config';
+
 
 @Module({
   imports: [
@@ -19,6 +22,7 @@ import config from '../common/config/config';
     TypeOrmModule.forFeature([Contract, Azienda, Officina]),
   ],
   controllers: [ContractController],
-  providers: [WeebHookService],
+  providers: [WeebHookService, ContractService,
+    OfficinaService],
 })
-export class ContractModule {}
+export class ContractModule { }

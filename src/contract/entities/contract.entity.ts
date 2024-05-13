@@ -3,6 +3,13 @@ import { AbstractEntity } from '../../common/db/abstract.entity';
 import { Officina } from './officina.entity';
 import { Azienda } from './azienda.entity';
 
+export class Table {
+  id: string;
+  name: string;
+  items: object[];
+  columns: object[];
+}
+
 @Entity('contract')
 export class Contract extends AbstractEntity<Contract> {
   @ManyToOne(() => Officina, (officina) => officina.id, { nullable: false })
@@ -18,11 +25,5 @@ export class Contract extends AbstractEntity<Contract> {
   contract_name: string;
 
   @Column({ type: 'jsonb', nullable: false })
-  table: {
-    id: string;
-    name: string;
-    items: object[];
-    columns: object[];
-    merge_table: object[];
-  }[];
+  tables: Table[];
 }

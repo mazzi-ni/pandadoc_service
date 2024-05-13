@@ -2,6 +2,19 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractEntity } from '../../common/db/abstract.entity';
 import { Contract } from './contract.entity';
 
+export class SedeOperativa {
+  cap: string;
+  sdi: string;
+  iban: string;
+  citta: string;
+  email: string;
+  civico: string;
+  sitoweb: string;
+  telefono: string;
+  cellulare: string;
+  indirizzo: string;
+}
+
 @Entity('officina_vfleet')
 export class Officina extends AbstractEntity<Officina> {
   @OneToMany(() => Contract, contract => contract.id)
@@ -35,21 +48,7 @@ export class Officina extends AbstractEntity<Officina> {
   camera_commercio: string;
 
   @Column({ type: 'jsonb', nullable: false })
-  sede_operativa: {
-    sedeoperativa_cap: string;
-    sedeoperativa_sdi: string;
-    sedeoperativa_iban: string;
-    sedeoperativa_citta: string;
-    sedeoperativa_email: string;
-    sedeoperativa_civico: string;
-    sedeoperativa_sitoweb: string;
-    sedeoperativa_telefono: string;
-    sedeoperativa_cellulare: string;
-    sedeoperativa_indirizzo: string;
-    sedeoperativa_provincia: string;
-    sedeoperativa_referente: string;
-    sedeoperativa_ruoloreferente: string;
-  };
+  sede_operativa: SedeOperativa;
 
   @Column({ nullable: false })
   responsabile_trattamento: string;
