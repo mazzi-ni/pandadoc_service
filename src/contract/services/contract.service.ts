@@ -6,27 +6,33 @@ import { Contract, Table } from '../entities/contract.entity';
 import { Officina } from '../entities/officina.entity';
 
 interface Token {
-  name: string,
-  value: string
+  name: string;
+  value: string;
 }
 
 @Injectable()
 export class ContractService {
-  private readonly logger: Logger = new Logger(ContractService.name)
+  private readonly logger: Logger = new Logger(ContractService.name);
 
   constructor(
     @InjectRepository(Azienda)
     private readonly aziendaRespository: Repository<Azienda>,
     @InjectRepository(Contract)
-    private readonly contractRepository: Repository<Contract>
-  ) { }
+    private readonly contractRepository: Repository<Contract>,
+  ) {}
 
-  async exec(tokens: Token[], tables: Table[], officina: Officina, docId: string, name: string) {
+  async exec(
+    tokens: Token[],
+    tables: Table[],
+    officina: Officina,
+    docId: string,
+    name: string,
+  ) {
 
-    let agencies = await this.getAgencies()
+    let agencies = await this.getAgencies();
     let newContracts: {
-      [aziendaName: string]: Contract
-    } = {}
+      [aziendaName: string]: Contract;
+    } = {};
 
     tables.map((table) => {
       const nameTablePath = table.name.split('.');
@@ -34,31 +40,30 @@ export class ContractService {
       if (nameTablePath.length >= 2) {
         if (!newContracts.hasOwnProperty(nameTablePath[0])) {
           newContracts[nameTablePath[0]] = new Contract({
-            id_azienda: agencies.find(agencie => agencie.name === nameTablePath[0]),
+            id_azienda: agencies.find(
+              (agencie) => agencie.name === nameTablePath[0],
+            ),
             id_officina: officina,
             doc_id: docId,
             contract_name: name,
-            tables: []
-          })
-        } else {
-          console.log('sas')
-        }
+            tables: [],
+          });
+        } 
 
-        newContracts[nameTablePath[0]].tables.push(table)
+        newContracts[nameTablePath[0]].tables.push(table);
       }
-    })
+    });
 
-    Object.values(newContracts).map(contract => this.create(contract))
-    return newContracts
+    Object.values(newContracts).map((contract) => this.create(contract));
+    return newContracts;
   }
 
-
   private async create(contract: Contract) {
-    return await this.contractRepository.save(contract)
+    return await this.contractRepository.save(contract);
   }
 
   private async getAgencies(): Promise<Azienda[]> | null {
-    const azienda = await this.aziendaRespository.find()
+    const azienda = await this.aziendaRespository.find();
     return azienda;
   }
 }

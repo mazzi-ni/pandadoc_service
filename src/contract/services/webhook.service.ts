@@ -46,7 +46,8 @@ export class WeebHookService {
     const contract = tokens !== null && tables !== null && officina !== undefined
       ? await this.contractService.exec(tokens, tables, officina, id, name)
       : null
-
+    
+    
     // return { fields: fields, tables: tables };
   }
 
