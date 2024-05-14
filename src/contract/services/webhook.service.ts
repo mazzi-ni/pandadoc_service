@@ -6,6 +6,7 @@ import { DocumentDetailDto } from '../dto/docdetail.dto';
 import { ContractService } from './contract.service';
 import { OfficinaService } from './officina.service';
 import { Table } from '../entities/contract.entity';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class WeebHookService {
@@ -15,6 +16,7 @@ export class WeebHookService {
   constructor(
     private readonly configService: ConfigService,
     private readonly contractService: ContractService,
+    private readonly tokenService: TokenService,
     private readonly officinaService: OfficinaService
   ) {
     this.DOC_URL = this.configService.get<string>('pandadoc.doc');
@@ -47,6 +49,9 @@ export class WeebHookService {
       ? await this.contractService.exec(tokens, tables, officina, id, name)
       : null
 
+    const contract_by_token = tokens !== null && officina !== undefined
+      ? await this.tokenService.exec(tokens, name, id, officina)
+      : null
     // return { fields: fields, tables: tables };
   }
 
@@ -120,7 +125,7 @@ export class WeebHookService {
       ]);
 
       if (
-        !(field['name'].includes('Firma') || field['name'].includes('Date'))
+        !(field['name'].includes('Firma') || field['name'].includes('Date') || field['name'].includes('Signature'))
       ) {
         processFieldData.merge_fields = {
           ...processFieldData.merge_fields,
