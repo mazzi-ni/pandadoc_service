@@ -52,6 +52,29 @@ export class ContractService {
     return newContracts
   }
 
+  private tokenToJson(items) {
+    const root = {};
+
+    items.forEach(item => {
+      const parts = item.name.split('.');
+      let current = root;
+      parts.forEach((part, index) => {
+        // Se siamo all'ultima parte del percorso, impostiamo il valore
+        if (index === parts.length - 1) {
+          current[part] = item.value;
+        } else {
+          // Altrimenti, continuamo a costruire l'albero
+          if (!current[part]) {
+            current[part] = {};
+          }
+          current = current[part];
+        }
+      });
+    });
+
+    return root;
+  }
+
 
   private async create(contract: Contract) {
     return await this.contractRepository.save(contract)

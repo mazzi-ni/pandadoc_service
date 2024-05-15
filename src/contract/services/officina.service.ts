@@ -10,6 +10,7 @@ export class OfficinaService {
     private readonly officineRepository: Repository<Officina>
   ) { }
 
+  // TODO: fa ancora i duplicati!!
   public async exec(mergeFields: object) {
     const newOfficina = this.createEntity(mergeFields);
     const checkOfficina = await this.find(newOfficina);
