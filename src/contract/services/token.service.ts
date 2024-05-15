@@ -4,7 +4,6 @@ import { Azienda } from '../entities/azienda.entity';
 import { Contract } from '../entities/contract.entity';
 import { Officina } from '../entities/officina.entity';
 import { Repository } from 'typeorm';
-import { observableToBeFn } from 'rxjs/internal/testing/TestScheduler';
 
 class Token {
   name: string;
@@ -30,8 +29,9 @@ export class TokenService {
   ) {
     const tokenObj = this.extractTokens(tokens);
     let agencies = await this.getAgencies();
-
     let newContract = [];
+
+    console.log(agencies)
 
     Object.entries(tokenObj).map((tokenByAgency) => {
       newContract.push(
@@ -39,21 +39,39 @@ export class TokenService {
           contract_name: contractName,
           doc_id: docId,
           id_officina: officina,
-          // tables: tokenByAgency[1],
+          tables: tokenByAgency[1] as object,
           id_azienda: agencies.find(
-            (agencie) => agencie.name === tokenByAgency[0],
+            (agencie) =>
+              agencie.name.toLowerCase() === tokenByAgency[0].toLowerCase(),
           ),
         }),
       );
     });
+
+    this.logger.debug(newContract);
+    // return newContract;
+
+    newContract.map((contract) => this.contractRepository.save(contract));
   }
 
   public extractTokens(tokens: Token[]) {
     const tokenTree = {};
+    const generalToken = {};
+
     tokens.map((token) => {
-      this.assignByPath(tokenTree, token.name.split('.'), token.value);
+      const namePath = token.name.split('.')
+      if (namePath.length > 1) {
+        this.assignByPath(tokenTree, namePath, token.value);
+      } else {
+        generalToken[token.name] = token.value 
+      }
     });
 
+    for (let key in tokenTree) {
+      if (tokenTree.hasOwnProperty(key)) {
+        tokenTree[key] = { ...generalToken, ...tokenTree[key] };
+      }
+    }
     return tokenTree;
   }
 

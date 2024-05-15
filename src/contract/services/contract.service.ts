@@ -50,7 +50,7 @@ export class ContractService {
           });
         } 
 
-        newContracts[nameTablePath[0]].tables.push(table);
+        // newContracts[nameTablePath[0]].tables.push(table);
       }
     });
 

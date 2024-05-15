@@ -10,7 +10,7 @@ import { Officina } from './entities/officina.entity';
 import { ContractService } from './services/contract.service';
 import { OfficinaService } from './services/officina.service';
 import config from '../common/config/config';
-
+import { TokenService } from './services/token.service';
 
 @Module({
   imports: [
@@ -22,7 +22,6 @@ import config from '../common/config/config';
     TypeOrmModule.forFeature([Contract, Azienda, Officina]),
   ],
   controllers: [ContractController],
-  providers: [WeebHookService, ContractService,
-    OfficinaService],
+  providers: [WeebHookService, ContractService, OfficinaService, TokenService],
 })
-export class ContractModule { }
+export class ContractModule {}

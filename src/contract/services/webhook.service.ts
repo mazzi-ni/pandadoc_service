@@ -1,11 +1,12 @@
 import { Logger, Injectable } from '@nestjs/common';
 import { WebhookDto } from '../dto/webhook.dto';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 import { DocumentDetailDto } from '../dto/docdetail.dto';
 import { ContractService } from './contract.service';
 import { OfficinaService } from './officina.service';
 import { Table } from '../entities/contract.entity';
+import { TokenService } from './token.service';
+import axios from 'axios';
 
 @Injectable()
 export class WeebHookService {
@@ -15,7 +16,8 @@ export class WeebHookService {
   constructor(
     private readonly configService: ConfigService,
     private readonly contractService: ContractService,
-    private readonly officinaService: OfficinaService
+    private readonly officinaService: OfficinaService,
+    private readonly tokenService: TokenService,
   ) {
     this.DOC_URL = this.configService.get<string>('pandadoc.doc');
     axios.defaults.headers.common['Authorization'] =
@@ -29,6 +31,12 @@ export class WeebHookService {
       }
     });
   }
+  
+  // TODO: 
+  // - i service sarebbe meglio che fanno i calcoli e ritonarno solo le entity o gli array di entity
+  // - poi il push in db potrebbe avvenire qui così tutti i repository stanno qui volendo però boo ???
+  // - sistemare token → prendo e poi faccio un bel obj
+  // - doppioni
 
   private async extractData(id: string, name: string) {
     let docDetail: DocumentDetailDto = await this.getDocuments(id);
@@ -36,22 +44,23 @@ export class WeebHookService {
     let tokens = docDetail.tokens;
     let fields = this.extractFields(docDetail.fields);
     let tables = docDetail.pricing['tables']
-      ? this.extractTables(docDetail.pricing['tables']) as Table[]
+      ? (this.extractTables(docDetail.pricing['tables']) as Table[])
       : null;
 
-    const officina = fields.merge_fields !== null
-      ? await this.officinaService.exec(fields.merge_fields)
-      : null
+    const officina =
+      fields.merge_fields !== null
+        ? await this.officinaService.exec(fields.merge_fields)
+        : null;
 
-    const contract = tokens !== null && tables !== null && officina !== undefined
-      ? await this.contractService.exec(tokens, tables, officina, id, name)
-      : null
+    const contract =
+      tokens !== null && officina !== undefined
+        ? await this.tokenService.exec(tokens, name, id, officina)
+        : null;
     
-    
+    // console.log(contract)
     // return { fields: fields, tables: tables };
   }
-
-
+  
   private extractTables(tables: object[]) {
     let processTables: object[];
 
@@ -121,7 +130,11 @@ export class WeebHookService {
       ]);
 
       if (
-        !(field['name'].includes('Firma') || field['name'].includes('Date'))
+        !(
+          field['name'].includes('Firma') ||
+          field['name'].includes('Date') ||
+          field['name'].includes('Signature')
+        )
       ) {
         processFieldData.merge_fields = {
           ...processFieldData.merge_fields,

@@ -23,7 +23,10 @@ export class Contract extends AbstractEntity<Contract> {
 
   @Column()
   contract_name: string;
-
+  
   @Column({ type: 'jsonb', nullable: false })
-  tables: Table[];
+  tables: object;
+  
+  // @Column({ type: 'jsonb', nullable: false })
+  // tables: Table[];
 }
